@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Notes Manager</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    *{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:linear-gradient(120deg,#1f1c2c,#928dab);
+  min-height:100vh;
+  color:#fff;
+}
+
+/* Header */
+
+header{
+  background:#111;
+  padding:18px 30px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:3px solid #4cafef;
+}
+
+header h1{
+  font-size:22px;
+  letter-spacing:1px;
+}
+
+header span{
+  font-size:26px;
+}
+
+/* Container */
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:30px 20px;
+}
+
+/* Card */
+
+.card{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(10px);
+  border-radius:12px;
+  padding:25px;
+  margin-bottom:25px;
+  border:1px solid rgba(255,255,255,0.2);
+}
+
+.card h2{
+  margin-bottom:15px;
+  color:#4fc3f7;
+}
+
+/* Form */
+
+.form-row{
+  display:flex;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.form-group{
+  flex:1;
+  min-width:200px;
+  margin-bottom:12px;
+}
+
+label{
+  font-size:13px;
+  margin-bottom:5px;
+  display:block;
+}
+
+input, textarea{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  outline:none;
+  font-size:14px;
+}
+
+textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+/* Buttons */
+
+button{
+  padding:9px 18px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-primary{
+  background:#4cafef;
+  color:#fff;
+}
+
+.btn-primary:hover{
+  background:#2196f3;
+}
+
+.btn-secondary{
+  background:#9e9e9e;
+  color:white;
+}
+
+.btn-secondary:hover{
+  background:#757575;
+}
+
+.btn-warning{
+  background:#ffb74d;
+  color:black;
+}
+
+.btn-danger{
+  background:#ef5350;
+  color:white;
+}
+
+/* Notes Grid */
+
+#notesGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:18px;
+}
+
+/* Note Card */
+
+.note-card{
+  background:rgba(0,0,0,0.45);
+  padding:18px;
+  border-radius:10px;
+  border-left:4px solid #4fc3f7;
+  transition:0.3s;
+}
+
+.note-card:hover{
+  transform:scale(1.03);
+}
+
+.note-card h3{
+  margin-bottom:6px;
+}
+
+.note-card p{
+  font-size:13px;
+  margin-bottom:10px;
+  color:#ddd;
+}
+
+.meta{
+  font-size:11px;
+  margin-bottom:10px;
+  color:#aaa;
+}
+
+.badge{
+  background:#4fc3f7;
+  color:#000;
+  font-size:11px;
+  padding:3px 8px;
+  border-radius:20px;
+  margin-bottom:6px;
+  display:inline-block;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+}
+
+/* Empty State */
+
+.empty-state{
+  text-align:center;
+  padding:40px;
+  grid-column:1/-1;
+}
+
+.empty-state .icon{
+  font-size:40px;
+}
+
+/* Modal */
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-overlay.active{
+  display:flex;
+}
+
+.modal{
+  background:#222;
+  padding:25px;
+  border-radius:10px;
+  width:90%;
+  max-width:450px;
+}
+
+/* Loading */
+
+#loadingOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+#loadingOverlay.active{
+  display:flex;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:4px solid #ccc;
+  border-top:4px solid #4fc3f7;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>📓</span>
+  <h1>Student Notes Manager</h1>
+</header>
+
+<div id="toast"></div>
+<div id="loadingOverlay"><div class="spinner"></div></div>
+
+<div class="container">
+
+  <!-- Add Note Form -->
+  <div class="card">
+    <h2>➕ Add New Note</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input type="text" id="title" placeholder="e.g. MongoDB Basics" maxlength="100"/>
+      </div>
+      <div class="form-group">
+        <label for="subject">Subject *</label>
+        <input type="text" id="subject" placeholder="e.g. Database"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea id="description" placeholder="Write your note here..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addNote()">Save Note</button>
+      <button class="btn-secondary" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Notes List -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+      <h2>📋 All Notes (<span id="noteCount">0</span>)</h2>
+      <button class="btn-secondary" onclick="loadNotes()" style="padding:7px 16px;font-size:.85rem;">🔄 Refresh</button>
+    </div>
+    <div id="notesGrid">
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>No notes yet. Add your first note above!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>✏️ Edit Note</h2>
+    <input type="hidden" id="editId"/>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="editTitle" maxlength="100"/>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <input type="text" id="editSubject"/>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="editDescription"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="updateNote()">Update Note</button>
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Config ─────────────────────────────────────────────────────────────────
+const API = '/notes';
+
+// ─── Toast Notification ──────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✅ ' : '❌ ') + msg;
+  t.className = `show ${type}`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = '', 3000);
+}
+
+// ─── Loading Overlay ─────────────────────────────────────────────────────────
+function setLoading(active) {
+  document.getElementById('loadingOverlay').classList.toggle('active', active);
+}
+
+// ─── AJAX Helper with Error Handling ─────────────────────────────────────────
+async function apiRequest(url, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+
+  const res = await fetch(url, opts);
+
+  // Guard against non-JSON responses (e.g. HTML error pages)
+  let data;
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    throw new Error(`Unexpected response (HTTP ${res.status})`);
+  }
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || `HTTP ${res.status}`);
+  }
+  return data;
+}
+
+// ─── Load All Notes ───────────────────────────────────────────────────────────
+async function loadNotes() {
+  setLoading(true);
+  try {
+    const data = await apiRequest(API);
+    renderNotes(data.data);
+    document.getElementById('noteCount').textContent = data.count;
+  } catch (err) {
+    showToast('Failed to load notes: ' + err.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─── Render Notes Grid ────────────────────────────────────────────────────────
+function renderNotes(notes) {
+  const grid = document.getElementById('notesGrid');
+  if (!notes || !notes.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>No notes yet. Add your first note above!</p></div>`;
+    return;
+  }
+  grid.innerHTML = notes.map(n => `
+    <div class="note-card" id="card-${n._id}">
+      <span class="badge">${escHtml(n.subject)}</span>
+      <h3>${escHtml(n.title)}</h3>
+      <p>${escHtml(n.description)}</p>
+      <div class="meta">📅 ${n.created_date}</div>
+      <div class="actions">
+        <button class="btn-warning"
+          data-id="${n._id}"
+          data-title="${escAttr(n.title)}"
+          data-subject="${escAttr(n.subject)}"
+          data-description="${escAttr(n.description)}"
+          onclick="openEditFromBtn(this)">✏️ Edit</button>
+        <button class="btn-danger" onclick="deleteNote('${n._id}')">🗑️ Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── Add Note ─────────────────────────────────────────────────────────────────
+async function addNote() {
+  const title       = document.getElementById('title').value.trim();
+  const subject     = document.getElementById('subject').value.trim();
+  const description = document.getElementById('description').value.trim();
+
+  if (!title || !subject || !description) {
+    showToast('Please fill in all fields', 'error');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // JSON request as per spec
+    const data = await apiRequest(API, 'POST', { title, subject, description });
+    showToast(data.message);
+    clearForm();
+    loadNotes();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─── Open Edit Modal ──────────────────────────────────────────────────────────
+// Use data-* attributes to avoid HTML-entity corruption in onclick strings
+function openEditFromBtn(btn) {
+  document.getElementById('editId').value           = btn.dataset.id;
+  document.getElementById('editTitle').value        = btn.dataset.title;
+  document.getElementById('editSubject').value      = btn.dataset.subject;
+  document.getElementById('editDescription').value  = btn.dataset.description;
+  document.getElementById('editModal').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('editModal').classList.remove('active');
+}
+
+// ─── Update Note (PUT) ────────────────────────────────────────────────────────
+async function updateNote() {
+  const id          = document.getElementById('editId').value;
+  const title       = document.getElementById('editTitle').value.trim();
+  const subject     = document.getElementById('editSubject').value.trim();
+  const description = document.getElementById('editDescription').value.trim();
+
+  if (!title && !subject && !description) {
+    showToast('Nothing to update', 'error'); return;
+  }
+
+  setLoading(true);
+  try {
+    // PUT /notes/{id}  with JSON body as per spec
+    const data = await apiRequest(`${API}/${id}`, 'PUT', { title, subject, description });
+    showToast(data.message);
+    closeModal();
+    loadNotes();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─── Delete Note ──────────────────────────────────────────────────────────────
+async function deleteNote(id) {
+  if (!confirm('Are you sure you want to delete this note?')) return;
+
+  setLoading(true);
+  try {
+    const data = await apiRequest(`${API}/${id}`, 'DELETE');
+    showToast(data.message);
+    document.getElementById(`card-${id}`)?.remove();
+    const count = parseInt(document.getElementById('noteCount').textContent) - 1;
+    document.getElementById('noteCount').textContent = count;
+    if (count === 0) loadNotes();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function clearForm() {
+  ['title','subject','description'].forEach(id => document.getElementById(id).value = '');
+}
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(str) {
+  return String(str).replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+}
+
+// Close modal on overlay click
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadNotes();
+</script>
+</body>
+</html>
