@@ -1,0 +1,18 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #fff8dc;
+}
+
+button {
+    padding: 10px;
+    background: green;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+p {
+    margin-top: 15px;
+    font-size: 18px;
+}
