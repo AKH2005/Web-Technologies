@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Middleware Demo</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Middleware Demo</h1>
+
+    <div class="buttons">
+      <button onclick="callAPI('/home')">Call Home</button>
+      <button onclick="callAPI('/about')">Call About</button>
+      <button onclick="callAPI('/admin')">Call Admin</button>
+    </div>
+
+    <div class="output">
+      <h2>Response</h2>
+      <p id="result">Click a button...</p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
